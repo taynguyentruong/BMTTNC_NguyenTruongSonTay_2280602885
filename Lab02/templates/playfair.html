@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Playfair Cipher</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <style>
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <table class="table">
+            <tr>
+                <td style="text-align: center; font-weight: bold; font-size: 25px;">PLAYFAIR CIPHER</td>
+            </tr>
+            <tr>
+                <td style="font-weight: bold; color: blue;">ENCRYPTION</td>
+            </tr>
+            <tr>
+                <td>
+                    <form id="encryptForm" onsubmit="encryptPlayfair(event)">
+                        <div class="mb-3">
+                            <label class="form-label">Plain text:</label>
+                            <input type="text" class="form-control" name="inputPlainText" id="encryptPlainText" placeholder="Input Plain Text" required autofocus/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Key:</label>
+                            <input type="text" class="form-control" name="inputKeyPlain" id="encryptKey" placeholder="Input Key" required/>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Encrypt</button>
+                    </form>
+                    <div id="encryptResult" class="result-box" style="display: none;">
+                        <h5>Kết quả mã hóa:</h5>
+                        <p><strong>Văn bản gốc:</strong> <span id="e_plainText"></span></p>
+                        <p><strong>Khóa:</strong> <span id="e_key"></span></p>
+                        <p><strong>Văn bản đã mã hóa:</strong> <span id="e_encryptedText"></span></p>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td style="font-weight: bold; color: blue;">DECRYPTION</td>
+            </tr>
+            <tr>
+                <td>
+                    <form id="decryptForm" onsubmit="decryptPlayfair(event)">
+                        <div class="mb-3">
+                            <label class="form-label">Cipher text:</label>
+                            <input type="text" class="form-control" name="inputCipherText" id="decryptCipherText" placeholder="Input Cipher Text" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Key:</label>
+                            <input type="text" class="form-control" name="inputKeyCipher" id="decryptKey" placeholder="Input Key" required/>
+                        </div>
+                        <button type="submit" class="btn btn-success">Decrypt</button>
+                    </form>
+                    <div id="decryptResult" class="result-box" style="display: none;">
+                        <h5>Kết quả giải mã:</h5>
+                        <p><strong>Văn bản mã hóa:</strong> <span id="d_cipherText"></span></p>
+                        <p><strong>Khóa:</strong> <span id="d_key"></span></p>
+                        <p><strong>Văn bản đã giải mã:</strong> <span id="d_decryptedText"></span></p>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        async function encryptPlayfair(event) {
+            event.preventDefault(); // Ngăn chặn form gửi đi theo cách truyền thống
+
+            const plainText = document.getElementById('encryptPlainText').value;
+            const key = document.getElementById('encryptKey').value;
+
+            try {
+                const response = await fetch('/api/playfair/encrypt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ plain_text: plainText, key: key })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('e_plainText').textContent = plainText;
+                    document.getElementById('e_key').textContent = key;
+                    document.getElementById('e_encryptedText').textContent = data.encrypted_text;
+                    document.getElementById('encryptResult').style.display = 'block';
+                } else {
+                    alert('Lỗi mã hóa: ' + (data.error || 'Không xác định'));
+                }
+            } catch (error) {
+                console.error('Lỗi khi gửi yêu cầu mã hóa:', error);
+                alert('Có lỗi xảy ra khi mã hóa. Vui lòng thử lại.');
+            }
+        }
+
+        async function decryptPlayfair(event) {
+            event.preventDefault(); // Ngăn chặn form gửi đi theo cách truyền thống
+
+            const cipherText = document.getElementById('decryptCipherText').value;
+            const key = document.getElementById('decryptKey').value;
+
+            try {
+                const response = await fetch('/api/playfair/decrypt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cipher_text: cipherText, key: key })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('d_cipherText').textContent = cipherText;
+                    document.getElementById('d_key').textContent = key;
+                    document.getElementById('d_decryptedText').textContent = data.decrypted_text;
+                    document.getElementById('decryptResult').style.display = 'block';
+                } else {
+                    alert('Lỗi giải mã: ' + (data.error || 'Không xác định'));
+                }
+            } catch (error) {
+                console.error('Lỗi khi gửi yêu cầu giải mã:', error);
+                alert('Có lỗi xảy ra khi giải mã. Vui lòng thử lại.');
+            }
+        }
+    </script>
+</body>
+</html>
